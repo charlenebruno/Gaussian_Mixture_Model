@@ -4,6 +4,11 @@ import numpy as np
 
 import math as math
 
+import matplotlib.pyplot as plt
+
+from mpl_toolkits.mplot3d import Axes3D
+
+
 ##initialize parameters teta
 
 J = 2 #nb of clusters, arbitrary
@@ -13,19 +18,18 @@ N = 3 #nb of dimensions
 
 phi = [1/J,1/J]
 
-mu = np.array([[20,20],
-                [10,10],
-                [15,15]])
+mu = np.array([[0,3],
+                [0,3],
+                [0,3]])
 
 covariance_matrix = np.array(
                 [[[0.7,0,0],
-                [0,0.3,0],
-                [0,0,0.2]],
+                [0,0.7,0],
+                [0,0,0.7]],
 
-                [[0.5, 0,0],
-                [0, 0.8,0],
-                 [0, 0,0.1]]])
-print(covariance_matrix.shape)
+                [[1, 0,0],
+                [0, 1,0],
+                 [0, 0,1]]])
 
 
 n_samples = 300
@@ -44,9 +48,9 @@ stretched_gaussian = np.dot(np.random.randn(n_samples, N), covariance_matrix[1,:
 #print(stretched_gaussian.shape)
 # concatenate the two datasets into the final training set
 X_train = np.vstack([shifted_gaussian, stretched_gaussian])
-print(X_train.shape)
 
-##GMM algorithm
+
+##EM algorithm
 
 #E-step
 
@@ -111,10 +115,32 @@ def m_step(Wj,X_train):
 
 
 ##Find optimal parameters teta*
-Wj = e_step(X_train,phi,mu,covariance_matrix)
-print(Wj.shape)
-#print(Wj)
-phi, mu, covariance = m_step(Wj, X_train)
+n = 0
+while(n<=1):
+    print(n)
+    Wj = e_step(X_train,phi,mu,covariance_matrix)
+    phi, mu, covariance_matrix = m_step(Wj, X_train)
+    n +=1;
 
-print(covariance)
+print(Wj)
+print(covariance_matrix)
+
 ##Find cluster Ychapeau*
+Y_pred = np.argmax(Wj, axis=1)
+print(Y_pred)
+
+##Plot the clustering result
+def show_plot(Y_pred):
+    fig1=plt.figure()
+    ax=Axes3D(fig1)
+    I = len(X_train)
+
+    for i in range(I):
+        if (Y_pred[i]==0):
+            ax.scatter(X_train[i, 0], X_train[i, 1],  X_train[i, 2], color='red')
+        else:
+            ax.scatter(X_train[i, 0], X_train[i, 1],  X_train[i, 2], color='blue')
+
+    plt.show()
+
+show_plot(Y_pred)
